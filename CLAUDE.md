@@ -519,6 +519,21 @@ you are building before taking its advice.** The parts worth keeping from a
 mismatched result are the measurable ones — contrast thresholds, target sizes,
 reduced-motion — not the aesthetic direction.
 
+### Collision geometry has to include what was painted
+
+C5's shield and its collision initially shared the same 24-degree half-arc. The
+fixture was correct and the result felt wrong: a meteor whose centre was four
+degrees outside still visibly overlapped the thick, round-ended, glowing arc.
+The honest geometry included that painted thickness, so collision gained seven
+degrees of forgiveness while the drawing stayed narrow. Test the literal
+boundary, then play it; centre-line maths cannot see the pixels around the line.
+
+The same game exposed an aspect-ratio version of the mistake. Projectiles all
+started at one diagonal radius, which gave a horizontal meteor seconds less
+visible approach on a portrait screen. A radial object should spawn where its
+ray meets the actual viewport edge, not at the longest radius that happens to
+contain every edge.
+
 ### Don't autoplay, and keep at most one thing playing
 
 C4 had several startup sounds on one page with `preload="auto"`, and the script
