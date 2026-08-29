@@ -534,6 +534,12 @@ visible approach on a portrait screen. A radial object should spawn where its
 ray meets the actual viewport edge, not at the longest radius that happens to
 contain every edge.
 
+The first collision repair was still only a one-frame checkpoint. It marked a
+meteor resolved even when it missed, so moving the shield onto the still-
+overlapping meteor one frame later did nothing. Collision geometry has time as
+well as space: keep checking for the whole painted overlap window, and only
+confirm a miss after the bodies have completely separated.
+
 ### Don't autoplay, and keep at most one thing playing
 
 C4 had several startup sounds on one page with `preload="auto"`, and the script

@@ -1,4 +1,4 @@
-import { shieldBlocks } from "./game-rules";
+import { shieldContactState } from "./game-rules";
 
 type ProjectileKind = "meteor" | "energy";
 type GamePhase = "ready" | "playing" | "won" | "lost";
@@ -66,6 +66,8 @@ const VISUAL_SHIELD_HALF_ARC_DEGREES = 24;
 // The meteor body and rounded shield cap overlap beyond the centre-line arc.
 // Seven extra degrees make the collision agree with what the player sees.
 const COLLISION_SHIELD_HALF_ARC_DEGREES = 31;
+// The shield can pulse to a ten-pixel stroke; collisions include that body.
+const COLLISION_SHIELD_HALF_WIDTH = 5;
 const GOLDEN_ANGLE = 2.399963229728653;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -335,21 +337,24 @@ function updateProjectiles(delta: number): void {
     const previousDistance = projectileDistance(projectile);
     projectile.progress -= projectile.speed * delta;
     const distance = projectileDistance(projectile);
-    const shieldThreshold = shieldRadius + projectile.radius * 0.35;
+    if (!projectile.shieldResolved) {
+      const contact = shieldContactState({
+        previousDistance,
+        distance,
+        projectileAngle: toDegrees(projectile.angle),
+        shieldAngle: toDegrees(game.shieldAngle),
+        shieldRadius,
+        projectileRadius: projectile.radius,
+        shieldHalfWidth: COLLISION_SHIELD_HALF_WIDTH,
+        shieldHalfArc: COLLISION_SHIELD_HALF_ARC_DEGREES,
+      });
 
-    if (
-      !projectile.shieldResolved &&
-      previousDistance > shieldThreshold &&
-      distance <= shieldThreshold
-    ) {
-      projectile.shieldResolved = true;
-      const blocked = shieldBlocks(
-        toDegrees(projectile.angle),
-        toDegrees(game.shieldAngle),
-        COLLISION_SHIELD_HALF_ARC_DEGREES,
-      );
-
-      if (blocked) resolveShieldContact(projectile);
+      if (contact === "blocked") {
+        projectile.shieldResolved = true;
+        resolveShieldContact(projectile);
+      } else if (contact === "passed") {
+        projectile.shieldResolved = true;
+      }
     }
 
     if (!projectile.alive) continue;
