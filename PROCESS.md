@@ -26,3 +26,8 @@ inside play rather than through an explanation.
    both 1920×1080 and 390×844. The browser audit also reported no overflow,
    runtime errors or axe violations. Those play-led corrections are captured in
    [`82d9568`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Zer0tier/commit/82d9568).
+   A later cold play report exposed a temporal version of the same mismatch:
+   the one-frame collision checkpoint ignored a shield moved onto a still-
+   overlapping meteor. I kept collision active across the painted overlap
+   window and captured that exact correction in a regression fixture at
+   [`f4b6665`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-Zer0tier/commit/f4b6665).
