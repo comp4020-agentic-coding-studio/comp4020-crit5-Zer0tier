@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
+import { shieldBlocks } from "../game-rules";
 
 // C5 "A game"
 // https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/crits/05-game/
@@ -74,6 +75,12 @@ describe("crit 5: a game", () => {
           "teach the first move by itself, not tell the player how to play",
       ).toBe(false);
     }
+  });
+
+  it("blocks a meteor approaching inside the shield arc, including across 0°", () => {
+    // Literal fixture: a shield centred at 5° and 24° wide on either side
+    // includes a meteor at 355° because their shortest separation is 10°.
+    expect(shieldBlocks(355, 5, 24)).toBe(true);
   });
 });
 

@@ -3,36 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>COMP4020 prototype</title>
+    <title>Orbital Shield</title>
     <meta
       name="description"
-      content="Replace this with one sentence saying what this page is. A search result and a link preview both show it."
+      content="A wordless cosmic reflex game about protection, restraint and a very small shield."
     />
-
-    <!--
-      The link-preview card: public/card.png, 1200x630 --- replace it. The URL
-      resolves against this page, like any link. No og:title/og:description:
-      scrapers fall back to the <title> and description above.
-    -->
     <meta property="og:type" content="website" />
     <meta property="og:image" content="./card.png" />
     <meta name="twitter:card" content="summary_large_image" />
-
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header>
-      <nav aria-label="Primary">
-        <a href="./">Home</a>
+    <header class="hud">
+      <nav class="hud__inner" aria-label="Game status">
+        <h1 class="wordmark">
+          <span class="wordmark__orbit" aria-hidden="true"></span>
+          <span>Orbital</span>
+          <strong>Shield</strong>
+        </h1>
+
+        <div class="meters">
+          <div
+            class="meter meter--integrity"
+            id="integrity-meter"
+            role="img"
+            aria-label="Core integrity: 3 of 3"
+          >
+            <span class="meter__label">Core</span>
+            <span class="meter__pips" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </span>
+          </div>
+
+          <div
+            class="meter meter--charge"
+            id="charge-meter"
+            role="img"
+            aria-label="Core charge: 0 of 10"
+          >
+            <span class="meter__label">Charge</span>
+            <span class="meter__pips" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i>
+              <i></i><i></i><i></i><i></i><i></i>
+            </span>
+          </div>
+        </div>
       </nav>
     </header>
+
     <main>
-      <h1>COMP4020 prototype</h1>
-      <p>
-        Replace this with your prototype. This week's brief is on the course website;
-        <code>spec/README.md</code> explains how the checks in this repo relate to it.
-      </p>
+      <section class="game-stage" id="game-stage" aria-label="Orbital Shield arena">
+        <canvas
+          id="game-canvas"
+          tabindex="0"
+          aria-label="Orbital Shield game arena"
+        ></canvas>
+        <div class="impact-vignette" id="impact-vignette" aria-hidden="true"></div>
+
+        <div class="end-screen" id="end-screen" hidden aria-live="assertive">
+          <div class="end-screen__mark" aria-hidden="true">
+            <span></span>
+          </div>
+          <h2 id="end-title">Core lost</h2>
+          <p id="end-score">0 / 10</p>
+          <button id="restart-button" type="button" aria-label="Restart game">
+            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+              <path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" />
+            </svg>
+          </button>
+        </div>
+      </section>
     </main>
+
     <script type="module" src="./main.ts"></script>
   </body>
 </html>
