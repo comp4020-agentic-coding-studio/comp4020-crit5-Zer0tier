@@ -14,6 +14,7 @@ for (const viewport of cases) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("http://127.0.0.1:4321/", { waitUntil: "networkidle" });
+  await page.locator("#start-button").click();
 
   const centreX = viewport.width / 2;
   const centreY = viewport.height * (viewport.height < 560 ? 0.55 : 0.535);

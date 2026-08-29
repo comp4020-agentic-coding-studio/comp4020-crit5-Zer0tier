@@ -1,7 +1,7 @@
 import { shieldBlocks } from "./game-rules";
 
 type ProjectileKind = "meteor" | "energy";
-type GamePhase = "playing" | "won" | "lost";
+type GamePhase = "ready" | "playing" | "won" | "lost";
 type SoundKind = "block" | "damage" | "repel" | "absorb" | "win";
 
 interface Projectile {
@@ -49,6 +49,8 @@ const stage = requiredElement<HTMLElement>("#game-stage");
 const integrityMeter = requiredElement<HTMLElement>("#integrity-meter");
 const chargeMeter = requiredElement<HTMLElement>("#charge-meter");
 const impactVignette = requiredElement<HTMLElement>("#impact-vignette");
+const startScreen = requiredElement<HTMLElement>("#start-screen");
+const startButton = requiredElement<HTMLButtonElement>("#start-button");
 const endScreen = requiredElement<HTMLElement>("#end-screen");
 const endTitle = requiredElement<HTMLElement>("#end-title");
 const endScore = requiredElement<HTMLElement>("#end-score");
@@ -84,7 +86,7 @@ let nextId = 1;
 const heldKeys = new Set<string>();
 
 const game = {
-  phase: "playing" as GamePhase,
+  phase: "ready" as GamePhase,
   elapsed: 0,
   integrity: MAX_INTEGRITY,
   energy: 0,
@@ -157,8 +159,7 @@ function createStars(count: number): Star[] {
   }));
 }
 
-function restart(): void {
-  game.phase = "playing";
+function resetRoundState(): void {
   game.elapsed = 0;
   game.integrity = MAX_INTEGRITY;
   game.energy = 0;
@@ -182,6 +183,37 @@ function restart(): void {
   lastFrameTime = performance.now();
 }
 
+function showStartScreen(): void {
+  resetRoundState();
+  game.phase = "ready";
+  document.body.dataset.gameState = "ready";
+  startScreen.hidden = false;
+  startScreen.classList.remove("is-leaving");
+  startButton.disabled = false;
+}
+
+function startGame(): void {
+  if (game.phase !== "ready") return;
+  ensureAudio();
+  resetRoundState();
+  game.phase = "playing";
+  document.body.dataset.gameState = "playing";
+  startButton.disabled = true;
+  startScreen.classList.add("is-leaving");
+  window.setTimeout(() => {
+    startScreen.hidden = true;
+    startScreen.classList.remove("is-leaving");
+    startButton.disabled = false;
+  }, 230);
+}
+
+function restart(): void {
+  resetRoundState();
+  game.phase = "playing";
+  document.body.dataset.gameState = "playing";
+  startScreen.hidden = true;
+}
+
 function updateMeters(): void {
   const integrityPips = integrityMeter.querySelectorAll("i");
   integrityPips.forEach((pip, index) => {
@@ -202,9 +234,10 @@ function updateMeters(): void {
   );
 }
 
-function setEndState(result: Exclude<GamePhase, "playing">): void {
+function setEndState(result: Exclude<GamePhase, "ready" | "playing">): void {
   if (game.phase !== "playing") return;
   game.phase = result;
+  document.body.dataset.gameState = result;
   endScreen.dataset.result = result;
   endTitle.textContent = result === "won" ? "Orbit stable" : "Core lost";
   endScore.textContent = `${String(game.energy).padStart(2, "0")} / ${TARGET_ENERGY}`;
@@ -468,9 +501,11 @@ function draw(): void {
   }
 
   drawArena();
-  for (const projectile of game.projectiles) drawProjectile(projectile);
-  drawShield();
-  drawCore();
+  if (game.phase !== "ready") {
+    for (const projectile of game.projectiles) drawProjectile(projectile);
+    drawShield();
+    drawCore();
+  }
   drawRipples();
   drawParticles();
   context.restore();
@@ -818,7 +853,10 @@ window.addEventListener("keydown", (event) => {
     ensureAudio();
     event.preventDefault();
   }
-  if (game.phase !== "playing" && ["Enter", " "].includes(event.key)) {
+  if (game.phase === "ready" && ["Enter", " "].includes(event.key)) {
+    startGame();
+    event.preventDefault();
+  } else if (game.phase !== "playing" && ["Enter", " "].includes(event.key)) {
     restart();
     event.preventDefault();
   }
@@ -831,8 +869,9 @@ document.addEventListener("visibilitychange", () => {
   lastFrameTime = performance.now();
 });
 restartButton.addEventListener("click", restart);
+startButton.addEventListener("click", startGame);
 
 resizeCanvas();
-restart();
+showStartScreen();
 cancelAnimationFrame(animationFrame);
 animationFrame = requestAnimationFrame(frame);

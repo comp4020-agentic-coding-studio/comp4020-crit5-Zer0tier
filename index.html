@@ -13,7 +13,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body data-game-state="ready">
     <header class="hud">
       <nav class="hud__inner" aria-label="Game status">
         <h1 class="wordmark">
@@ -59,6 +59,20 @@
           aria-label="Orbital Shield game arena"
         ></canvas>
         <div class="impact-vignette" id="impact-vignette" aria-hidden="true"></div>
+
+        <div class="start-screen" id="start-screen">
+          <button
+            class="start-core"
+            id="start-button"
+            type="button"
+            aria-label="Start Orbital Shield"
+          >
+            <span class="start-core__orbit" aria-hidden="true"></span>
+            <span class="start-core__orb" aria-hidden="true">
+              <i></i>
+            </span>
+          </button>
+        </div>
 
         <div class="end-screen" id="end-screen" hidden aria-live="assertive">
           <div class="end-screen__mark" aria-hidden="true">
