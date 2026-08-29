@@ -77,10 +77,11 @@ describe("crit 5: a game", () => {
     }
   });
 
-  it("blocks a meteor approaching inside the shield arc, including across 0°", () => {
-    // Literal fixture: a shield centred at 5° and 24° wide on either side
-    // includes a meteor at 355° because their shortest separation is 10°.
-    expect(shieldBlocks(355, 5, 24)).toBe(true);
+  it("gives a visually overlapping meteor seven degrees of shield forgiveness", () => {
+    // Literal boundary fixture across 0°: 335° is 30° from a shield centred
+    // at 5°, so the 31° collision arc blocks it; 333° is 32° away and misses.
+    expect(shieldBlocks(335, 5, 31)).toBe(true);
+    expect(shieldBlocks(333, 5, 31)).toBe(false);
   });
 });
 

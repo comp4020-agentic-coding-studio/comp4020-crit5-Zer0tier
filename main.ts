@@ -11,6 +11,7 @@ interface Projectile {
   progress: number;
   speed: number;
   radius: number;
+  spawnDistance: number;
   shieldResolved: boolean;
   alive: boolean;
   spin: number;
@@ -60,7 +61,9 @@ const TAU = Math.PI * 2;
 const TARGET_ENERGY = 10;
 const MAX_INTEGRITY = 3;
 const VISUAL_SHIELD_HALF_ARC_DEGREES = 24;
-const COLLISION_SHIELD_HALF_ARC_DEGREES = 24;
+// The meteor body and rounded shield cap overlap beyond the centre-line arc.
+// Seven extra degrees make the collision agree with what the player sees.
+const COLLISION_SHIELD_HALF_ARC_DEGREES = 31;
 const GOLDEN_ANGLE = 2.399963229728653;
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -71,7 +74,6 @@ let centreX = 0;
 let centreY = 0;
 let coreRadius = 30;
 let shieldRadius = 100;
-let spawnRadius = 400;
 let projectileRadius = 9;
 let stars: Star[] = [];
 let animationFrame = 0;
@@ -136,7 +138,6 @@ function resizeCanvas(): void {
   const shortSide = Math.min(viewWidth, viewHeight);
   coreRadius = clamp(shortSide * 0.061, 23, 43);
   shieldRadius = clamp(shortSide * 0.22, 78, 154);
-  spawnRadius = Math.hypot(viewWidth, viewHeight) * 0.57 + 30;
   projectileRadius = clamp(shortSide * 0.019, 7.5, 13);
   stars = createStars(Math.round(clamp((viewWidth * viewHeight) / 14000, 38, 110)));
 }
@@ -179,7 +180,6 @@ function restart(): void {
   delete endScreen.dataset.result;
   updateMeters();
   lastFrameTime = performance.now();
-  canvas.focus({ preventScroll: true });
 }
 
 function updateMeters(): void {
@@ -225,10 +225,24 @@ function spawnProjectile(
     progress: 1,
     speed: 0.205 + Math.min(game.elapsed / 240, 0.08) + speedBoost,
     radius: kind === "meteor" ? projectileRadius : projectileRadius * 0.84,
+    spawnDistance: distanceToViewportEdge(angle) + projectileRadius * 5,
     shieldResolved: false,
     alive: true,
     spin: (nextId % 2 === 0 ? 1 : -1) * (0.9 + (nextId % 5) * 0.17),
   });
+}
+
+function distanceToViewportEdge(angle: number): number {
+  const cosine = Math.cos(angle);
+  const sine = Math.sin(angle);
+  const horizontalDistance = cosine >= 0
+    ? (viewWidth - centreX) / Math.max(cosine, 0.0001)
+    : centreX / Math.max(-cosine, 0.0001);
+  const verticalDistance = sine >= 0
+    ? (viewHeight - centreY) / Math.max(sine, 0.0001)
+    : centreY / Math.max(-sine, 0.0001);
+
+  return Math.min(horizontalDistance, verticalDistance);
 }
 
 function spawnMeteor(): void {
@@ -270,7 +284,7 @@ function scheduleProjectiles(): void {
 }
 
 function projectileDistance(projectile: Projectile): number {
-  return coreRadius + projectile.progress * (spawnRadius - coreRadius);
+  return coreRadius + projectile.progress * (projectile.spawnDistance - coreRadius);
 }
 
 function projectilePosition(projectile: Projectile): { x: number; y: number } {
