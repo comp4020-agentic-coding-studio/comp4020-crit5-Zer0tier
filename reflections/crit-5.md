@@ -1,23 +1,24 @@
 # Crit 5 reflection
 
-The breakthrough was realising that the collision rule and the collision
-experience were two different artefacts. My angular fixture could prove that a
-meteor centre fell inside a twenty-four-degree arc, but it could not see the
-meteor's body, the shield's rounded cap or its glow. Playing a near-edge case
-made the mismatch immediate: it looked blocked and still removed a life. Keeping
-the drawn arc narrow while widening the collision arc by seven degrees aligned
-the rule with the image instead of forcing the player to obey invisible
-centre-line geometry.
+The breakthrough was realising that a rule can be provably correct against
+every fixture it has ever met and still be wrong. My original wrap-around
+fixture proved the shield blocked at any single-rotation angle; it said
+nothing about what happens after the shield turns twice, because nothing I'd
+written asked that question. The double-modulo bug only existed in that unasked
+region. It stayed invisible under a fully green suite until I deliberately
+wrote a fixture that crossed 360°, which is the same lesson as the first
+collision bug in a stricter form: passing tests describe the cases you thought
+to write, not the cases that are true.
 
-The mobile render produced the same lesson at a larger scale. A shared radial
-spawn distance sounded consistent in code, yet a horizontal meteor remained
-offscreen much longer on a portrait viewport. Spawning from the actual edge in
-its direction gave both viewports comparable reaction time. Neither correction
-would have come from reading the implementation or celebrating a green test
-suite.
+Extending the game into Infinite mode produced a smaller version of the same
+pattern. A spiralling meteor can overlap the core's damage radius for several
+consecutive frames, and a naive read of "damage on overlap" fires once per
+frame rather than once per hit. The fix wasn't a cooldown bolted on afterwards;
+it was making the core briefly unable to take damage at all, so one visible
+impact is structurally one event no matter how many frames it spans.
 
-This work makes me want to be a developer who treats tests as precise but
-partial witnesses. I want to state deterministic rules clearly enough to test,
-then deliberately inspect the layers those rules cannot observe: perception,
-timing, aspect ratio and fairness. The goal is not merely code that agrees with
-itself, but an experience whose feedback earns the player's trust.
+This makes me want to keep asking what region of behaviour my fixtures have
+never visited, especially right after a feature changes what "normal" input
+looks like — a new game mode, a new projectile type, a longer play session. A
+green suite is evidence about the past, not a claim about the input I haven't
+tried yet.
