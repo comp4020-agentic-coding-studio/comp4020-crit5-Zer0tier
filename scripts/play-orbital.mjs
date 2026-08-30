@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 
 const label = process.argv[2] ?? "play";
+const waitMilliseconds = Number.parseInt(process.argv[3] ?? "5800", 10);
 const cases = [
   { name: "desktop", width: 1920, height: 1080 },
   { name: "mobile", width: 390, height: 844 },
@@ -24,7 +25,7 @@ for (const viewport of cases) {
     centreY + Math.sin(nearEdgeAngle) * 180,
   );
 
-  await page.waitForTimeout(5800);
+  await page.waitForTimeout(waitMilliseconds);
   const report = await page.evaluate(() => ({
     integrity: document.querySelector("#integrity-meter")?.getAttribute("aria-label"),
     charge: document.querySelector("#charge-meter")?.getAttribute("aria-label"),

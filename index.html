@@ -13,7 +13,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body data-game-state="ready">
+  <body data-game-state="ready" data-game-mode="standard">
     <header class="hud">
       <nav class="hud__inner" aria-label="Game status">
         <h1 class="wordmark">
@@ -21,6 +21,44 @@
           <span>Orbital</span>
           <strong>Shield</strong>
         </h1>
+        <span class="mode-chip" id="mode-chip" aria-live="polite"></span>
+        <button
+          class="sound-toggle"
+          id="music-button"
+          type="button"
+          aria-label="Background music"
+          aria-pressed="true"
+          title="Mute background music"
+          data-muted="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="sound-toggle__speaker" d="M5 9.25h3.25L12.5 6v12l-4.25-3.25H5Z" />
+            <path class="sound-toggle__waves" d="M15.25 9a4.2 4.2 0 0 1 0 6M17.5 6.75a7.4 7.4 0 0 1 0 10.5" />
+            <path class="sound-toggle__mute" d="m15.25 9 5.5 6m0-6-5.5 6" />
+          </svg>
+        </button>
+
+        <div class="performance-hud" id="performance-hud" aria-label="Performance">
+          <div
+            class="performance-stat performance-rank"
+            id="rank-display"
+            role="img"
+            aria-label="Rank D, Cadet"
+            data-rank="D"
+          >
+            <span>Rank</span>
+            <strong id="rank-value" aria-hidden="true">D</strong>
+          </div>
+          <div
+            class="performance-stat performance-combo"
+            id="combo-display"
+            role="img"
+            aria-label="Combo: 0 successful blocks"
+          >
+            <strong id="combo-value" aria-hidden="true">0</strong>
+            <span>Combo</span>
+          </div>
+        </div>
 
         <div class="meters">
           <div
@@ -41,7 +79,7 @@
             role="img"
             aria-label="Core charge: 0 of 10"
           >
-            <span class="meter__label">Charge</span>
+            <span class="meter__label" id="charge-label">Charge</span>
             <span class="meter__pips" aria-hidden="true">
               <i></i><i></i><i></i><i></i><i></i>
               <i></i><i></i><i></i><i></i><i></i>
@@ -59,6 +97,7 @@
           aria-label="Orbital Shield game arena"
         ></canvas>
         <div class="impact-vignette" id="impact-vignette" aria-hidden="true"></div>
+        <p class="sr-only" id="game-status" role="status" aria-atomic="true"></p>
 
         <div class="start-screen" id="start-screen">
           <button
@@ -72,6 +111,55 @@
               <i></i>
             </span>
           </button>
+
+          <div class="mode-picker" role="group" aria-label="Game mode">
+            <button
+              class="mode-picker__option"
+              type="button"
+              data-mode="standard"
+              aria-pressed="true"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19 12a7 7 0 0 1-9.7 6.46M5 12a7 7 0 0 1 9.7-6.46" />
+              </svg>
+              <span>Standard</span>
+            </button>
+            <button
+              class="mode-picker__option"
+              type="button"
+              data-mode="infinite"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8.25 8.5c-2.2 0-4 1.57-4 3.5s1.8 3.5 4 3.5c3.75 0 3.75-7 7.5-7 2.2 0 4 1.57 4 3.5s-1.8 3.5-4 3.5c-3.75 0-3.75-7-7.5-7Z" />
+              </svg>
+              <span>Infinite</span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="pause-screen"
+          id="pause-screen"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pause-title"
+          aria-describedby="pause-help"
+          hidden
+        >
+          <div class="pause-screen__card">
+            <span class="pause-screen__mark" aria-hidden="true"><i></i><i></i></span>
+            <p>Orbit suspended</p>
+            <h2 id="pause-title">Paused</h2>
+            <p id="pause-help"><kbd>Esc</kbd> to resume</p>
+            <button id="resume-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 6 9 6-9 6Z" />
+              </svg>
+              <span>Resume</span>
+            </button>
+          </div>
         </div>
 
         <div class="end-screen" id="end-screen" hidden aria-live="assertive">
@@ -79,12 +167,27 @@
             <span></span>
           </div>
           <h2 id="end-title">Core lost</h2>
-          <p id="end-score">0 / 10</p>
-          <button id="restart-button" type="button" aria-label="Restart game">
-            <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
-              <path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" />
-            </svg>
-          </button>
+          <div class="end-screen__scores">
+            <p id="end-score">0 / 10</p>
+            <p class="end-screen__performance" id="end-performance" data-rank="D">
+              Rank D · Best ×0
+            </p>
+          </div>
+          <div class="end-screen__actions">
+            <button id="restart-button" type="button" aria-label="Restart game">
+              <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+                <path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" />
+              </svg>
+            </button>
+            <button id="mode-button" type="button" aria-label="Change game mode">
+              <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+                <rect x="4" y="4" width="6" height="6" rx="1" />
+                <rect x="14" y="4" width="6" height="6" rx="1" />
+                <rect x="4" y="14" width="6" height="6" rx="1" />
+                <rect x="14" y="14" width="6" height="6" rx="1" />
+              </svg>
+            </button>
+          </div>
         </div>
       </section>
     </main>

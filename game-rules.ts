@@ -7,8 +7,10 @@ export function shieldBlocks(
   shieldAngle: number,
   shieldHalfArc: number,
 ): boolean {
-  const wrappedDifference =
-    ((projectileAngle - shieldAngle + 540) % 360) - 180;
+  const difference = projectileAngle - shieldAngle;
+  // JavaScript's % is a signed remainder, so normalise it before shifting
+  // into [-180, 180). This remains correct after any number of full turns.
+  const wrappedDifference = ((difference + 180) % 360 + 360) % 360 - 180;
 
   return Math.abs(wrappedDifference) <= shieldHalfArc;
 }
